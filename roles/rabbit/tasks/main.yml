@@ -1,0 +1,31 @@
+---
+- name: Ensure rabbitmq-server is installed
+  yum:
+    name: rabbitmq-server-3.7.5-1.el6
+    state: installed
+
+- name: Create Data dir
+  file:
+    path: /data
+    state: directory
+    group: rabbitmq
+    owner: rabbtmq
+    mode: 0750
+    recurse: yes
+
+- name: Create Log dir
+  file:
+    path: /log
+    state: directory
+    group: rabbitmq
+    owner: rabbtmq
+    mode: 0750
+    recurse: yes
+
+- name: Install rabbitmq-server file
+  template:
+    src: rabbitmq-server
+    dest: /etc/default/rabbitmq-server
+    group: rabbitmq
+    owner: rabbitmq
+    mode: 0640
