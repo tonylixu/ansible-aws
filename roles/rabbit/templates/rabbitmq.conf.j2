@@ -1,0 +1,19 @@
+vm_memory_high_watermark.relative = 0.6
+listeners.ssl.default = {{ rb.port }}
+ssl_options.certfile = {{ self_signed_certs[0].cert }}
+ssl_options.keyfile = {{ self_signed_certs[0].key }}
+ssl_options.verify = verify_none
+ssl_options.fail_if_no_peer_cert = false
+
+management.listener.port = {{ rb.management_port }}
+management.listener.ssl = true
+management.listener.ssl_opts.certfile = {{ self_signed_certs[0].cert }}
+management.listener.ssl_opts.keyfile = {{ self_signed_certs[0].key }}
+
+cluster_formation.peer_discovery_backend = rabbit_peer_discovery_aws
+cluster_formation.region = us-east-1
+cluster_formation.aws.use_autoscaling_group = true
+
+log.dir = /logs
+log.file.rotation.date = $D0
+log.file.rotation.count = 2
