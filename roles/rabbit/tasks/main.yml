@@ -29,3 +29,58 @@
     group: rabbitmq
     owner: rabbitmq
     mode: 0640
+
+- name: Write the rabbitmq enabled_plugins file
+  template:
+    src: enabled_plugins
+    dest: /etc/rabbitmq/enabled_plugins
+    group: rabbitmq
+    owner: rabbitmq
+    mode: 0640
+    
+- name: Setup rabbitmq config file
+  template:
+    src: rabbitmq.conf.j2
+    dest: /etc/rabbitmq/rabbitmq.conf
+    group: rabbitmq
+    owner: rabbitmq
+    mode: 0640
+  
+- name: Setup rabbitmq environment config file
+  template:
+    src: rabbitmq-env.conf.j2
+    dest: /etc/rabbitmq/rabbitmq-env.conf
+    group: rabbitmq
+    owner: rabbitmq
+    mode: 0640
+    
+- name: Updating rabbitmq erlang cookie
+  template:
+    src: erlang.cookie.j2
+    dest: /var/lib/rabbitmq/.erlang.cookie
+    group: rabbitmq
+    owner: rabbitmq
+    mode: 0400
+
+- name: Ensure rabbitmq-server service is enabled and running
+  service:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+
+- name: Setup rabbitmq users
+  rabbitmq_user:
+    user: "{{ item.name }}"
+    password: "{{ item.password }}"
+    tags: "{{ item.tags }}"
+    permissions: "{{ item.permissions }}"
+    state: presnet
+  with_items: "{{ rb.users }}"
+
+- name: Remove rabbitmq guest user
+  rabbitmq_user:
+    user: guest
+    state: absent
+
+- name: Create mirror policy
+  shell: rabbitmqctl set_policy mirror "incoming.*|ondemand.*|index.*|parser.*" '{"ha-mode":"all"}'
