@@ -1,0 +1,19 @@
+---
+- name: Get AWS Parameter Store
+  shell: "aws ssm get-parameters -- names {{ ssm.params | map(attribute='key') | join(' ') }} --with-decryption --region us-east-1 --output json"
+  register: ssm_params_values
+  when: ssm.params
+
+- name: Construct AWS SSM Result Query
+  set_fact:
+    query: "Parameters[?Name=='{{ item.key }}']Value[0]"
+    name: "{{ item.name }}"
+  with_items:
+    - "{{ ssm.params }}"
+  register: ssm_query
+
+- name: Register AWS Parameter to Ansible Variable
+  set_fact:
+    "{{ item.ansible_facts.name }}": "{{ ssm_params_values.stdout | from_json | json_query(item.ansible_facts.query) }}"
+  with_items:
+    - "{{ ssm_query.results }}"
